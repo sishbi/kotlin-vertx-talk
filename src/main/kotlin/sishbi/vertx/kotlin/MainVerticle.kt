@@ -1,25 +1,27 @@
 package sishbi.vertx.kotlin
 
-import io.vertx.core.AbstractVerticle
-import io.vertx.core.Promise
+import io.vertx.core.Vertx
+import io.vertx.ext.web.Router
+import io.vertx.kotlin.coroutines.CoroutineRouterSupport
+import io.vertx.kotlin.coroutines.CoroutineVerticle
+import io.vertx.kotlin.coroutines.coAwait
+import kotlinx.coroutines.runBlocking
+import kotlin.system.exitProcess
 
-class MainVerticle : AbstractVerticle() {
+private val LOG = mu.KotlinLogging.logger {}
 
-  override fun start(startPromise: Promise<Void>) {
-    vertx
-      .createHttpServer()
-      .requestHandler { req ->
-        req.response()
-          .putHeader("content-type", "text/plain")
-          .end("Hello from Vert.x!")
-      }
-      .listen(8888) { http ->
-        if (http.succeeded()) {
-          startPromise.complete()
-          println("HTTP server started on port 8888")
-        } else {
-          startPromise.fail(http.cause());
-        }
-      }
+class MainVerticle : CoroutineVerticle(), CoroutineRouterSupport {
+  override suspend fun start() {
+      vertx.deployVerticle(HttpVerticle()).coAwait()
+      vertx.deployVerticle(GrpcVerticle()).coAwait()
   }
+}
+
+fun main() {
+    LOG.info { "Started" }
+    Vertx.vertx().deployVerticle(MainVerticle())
+        .onFailure {
+            LOG.error(it) { "Failed" }
+            exitProcess(-1)
+        }
 }

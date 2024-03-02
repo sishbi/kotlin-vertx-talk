@@ -1,4 +1,5 @@
 # kotlin-vertx-talk
+
 Example project for a Vertx in Kotlin talk
 
 [![vert.x](https://img.shields.io/badge/vert.x-4.5.4-purple.svg)](https://vertx.io)
@@ -8,16 +9,19 @@ This application was generated using http://start.vertx.io
 ## Building
 
 To launch your tests:
+
 ```
 ./gradlew clean test
 ```
 
 To package your application:
+
 ```
 ./gradlew clean assemble
 ```
 
 To run your application:
+
 ```
 ./gradlew clean run
 ```

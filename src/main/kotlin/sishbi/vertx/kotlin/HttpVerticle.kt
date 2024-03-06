@@ -8,6 +8,7 @@ import io.vertx.kotlin.core.json.obj
 import io.vertx.kotlin.coroutines.CoroutineRouterSupport
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.coAwait
+import kotlinx.coroutines.slf4j.MDCContext
 import mu.KotlinLogging
 
 private val LOG = KotlinLogging.logger {}
@@ -16,7 +17,8 @@ class HttpVerticle : CoroutineVerticle(), CoroutineRouterSupport {
     override suspend fun start() {
         val router = Router.router(vertx)
 
-        router.get("/attendees").coRespond { ctx -> attendees(ctx) }
+        //TODO: talk about vertx dispatcher here
+        router.get("/attendees").coRespond(MDCContext()) { ctx -> attendees(ctx) }
 
         val server = vertx.createHttpServer()
             .requestHandler(router)

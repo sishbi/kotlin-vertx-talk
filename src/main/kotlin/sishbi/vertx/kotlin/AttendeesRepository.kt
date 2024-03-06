@@ -1,12 +1,14 @@
 package sishbi.vertx.kotlin
 
 import io.vertx.kotlin.coroutines.coAwait
+import io.vertx.sqlclient.SqlConnection
 import io.vertx.sqlclient.Tuple
 
 object AttendeesRepository {
     suspend fun getRegistrationNumberOrNull(name: String): MyUser? {
-        val conn = DB.pool.connection.coAwait()
+        lateinit var conn: SqlConnection
         return try {
+            conn = DB.pool.connection.coAwait()
             conn.prepare("select * from public.conference_attendees where name = $1").coAwait()
                 .query().execute(Tuple.of(name)).coAwait()
                 .map {

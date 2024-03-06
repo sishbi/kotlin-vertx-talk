@@ -47,11 +47,11 @@ class TestMainVerticle {
     @Test
     fun `register grpc with unknown user`(vertx: Vertx) {
         val client = GrpcClient.client(vertx)
-        val hello = VertxConferenceGrpcClient(client, SocketAddress.inetSocketAddress(8889, "localhost"))
+        val registration = VertxConferenceGrpcClient(client, SocketAddress.inetSocketAddress(8889, "localhost"))
 
         try {
             runBlocking {
-                val response = hello.register(registerRequest {
+                val response = registration.register(registerRequest {
                     name = "Unknown User"
                 }).coAwait()
                 LOG.info { "gRPC Response: ${response.name} = ${response.registrationNumber}" }
@@ -79,7 +79,7 @@ class TestMainVerticle {
         val client = WebClient.create(vertx)
         runBlocking {
             val response = client.getAbs("http://localhost:8888/attendees").send().coAwait()
-            LOG.info { "Http Response: ${response.bodyAsString()}" }
+            LOG.info { "Http Response ${response.statusCode()}: ${response.bodyAsString()}" }
         }
     }
 }

@@ -7,7 +7,7 @@ package sishbi.vertx.grpc;
 
 // The conference service definition.
 service Conference {
-  // Sends a greeting
+  // Sends a registration check
   rpc Register (RegisterRequest) returns (RegisterReply) {}
 }
 

@@ -6,10 +6,10 @@ import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.coAwait
 import io.vertx.kotlin.coroutines.vertxFuture
 import mu.KotlinLogging
-import sishbi.vertx.grpc.HelloReply
-import sishbi.vertx.grpc.HelloRequest
-import sishbi.vertx.grpc.VertxGreeterGrpcServer
-import sishbi.vertx.grpc.helloReply
+import sishbi.vertx.grpc.RegisterReply
+import sishbi.vertx.grpc.RegisterRequest
+import sishbi.vertx.grpc.VertxConferenceGrpcServer
+import sishbi.vertx.grpc.registerReply
 
 private val LOG = KotlinLogging.logger {}
 
@@ -17,7 +17,7 @@ class GrpcVerticle : CoroutineVerticle() {
     override suspend fun start() {
         val grpc = GrpcServer.server(vertx)
 
-        GreeterController().bindAll(grpc)
+        ConferenceGrpcController().bindAll(grpc)
 
         val server = vertx.createHttpServer()
             .requestHandler(grpc)
@@ -27,16 +27,18 @@ class GrpcVerticle : CoroutineVerticle() {
     }
 }
 
-class GreeterController : VertxGreeterGrpcServer.GreeterApi {
-    override fun sayHello(request: HelloRequest): Future<HelloReply> =
-        vertxFuture { hello(request) }
+class ConferenceGrpcController : VertxConferenceGrpcServer.ConferenceApi {
+    override fun register(request: RegisterRequest): Future<RegisterReply> =
+        vertxFuture { registerUser(request) }
 
-    private suspend fun hello(request: HelloRequest): HelloReply {
-        LOG.info { "Received hello gRPC request from: ${request.name}" }
-        val user = UserQuery.getUserOrNull(request.name)
-        val userDetails = user?.let { "Name:${it.name} + Age:${it.age}" } ?: "unknown user"
-        return helloReply {
-            message = "Hello $userDetails from Vert.x gRPC!"
+    private suspend fun registerUser(request: RegisterRequest): RegisterReply {
+        LOG.info { "Received registration gRPC request for: ${request.name}" }
+        val attendee = AttendeesRepository.getRegistrationNumberOrNull(request.name)
+            ?: throw IllegalStateException("Attendee not found for name: ${request.name}")
+
+        return registerReply {
+            name = attendee.name
+            registrationNumber = attendee.regNumber
         }
     }
 }

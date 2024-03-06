@@ -14,8 +14,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 import org.testcontainers.containers.PostgreSQLContainer
-import sishbi.vertx.grpc.VertxGreeterGrpcClient
-import sishbi.vertx.grpc.helloRequest
+import sishbi.vertx.grpc.VertxConferenceGrpcClient
+import sishbi.vertx.grpc.registerRequest
 
 
 private val LOG = KotlinLogging.logger {}
@@ -45,36 +45,40 @@ class TestMainVerticle {
     }
 
     @Test
-    fun `hello grpc with unknown user`(vertx: Vertx) {
+    fun `register grpc with unknown user`(vertx: Vertx) {
         val client = GrpcClient.client(vertx)
-        val hello = VertxGreeterGrpcClient(client, SocketAddress.inetSocketAddress(8889, "localhost"))
+        val hello = VertxConferenceGrpcClient(client, SocketAddress.inetSocketAddress(8889, "localhost"))
 
-        runBlocking {
-            val response = hello.sayHello(helloRequest {
-                name = "User"
-            }).coAwait()
-            LOG.info { "gRPC Response: ${response.message}" }
+        try {
+            runBlocking {
+                val response = hello.register(registerRequest {
+                    name = "Unknown User"
+                }).coAwait()
+                LOG.info { "gRPC Response: ${response.name} = ${response.registrationNumber}" }
+            }
+        } catch (e: Throwable) {
+            LOG.info { "$e" }
         }
     }
 
     @Test
-    fun `hello grpc with known user`(vertx: Vertx) {
+    fun `register grpc with known user`(vertx: Vertx) {
         val client = GrpcClient.client(vertx)
-        val hello = VertxGreeterGrpcClient(client, SocketAddress.inetSocketAddress(8889, "localhost"))
+        val hello = VertxConferenceGrpcClient(client, SocketAddress.inetSocketAddress(8889, "localhost"))
 
         runBlocking {
-            val response = hello.sayHello(helloRequest {
+            val response = hello.register(registerRequest {
                 name = "User 1"
             }).coAwait()
-            LOG.info { "gRPC Response: ${response.message}" }
+            LOG.info { "gRPC Response: ${response.name} = ${response.registrationNumber}" }
         }
     }
 
     @Test
-    fun `hello http`(vertx: Vertx) {
+    fun `attendees http`(vertx: Vertx) {
         val client = WebClient.create(vertx)
         runBlocking {
-            val response = client.getAbs("http://localhost:8888/hello").send().coAwait()
+            val response = client.getAbs("http://localhost:8888/attendees").send().coAwait()
             LOG.info { "Http Response: ${response.bodyAsString()}" }
         }
     }

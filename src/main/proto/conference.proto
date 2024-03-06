@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "sishbi.vertx.grpc";
+option java_outer_classname = "ConferenceProto";
+package sishbi.vertx.grpc;
+
+// The conference service definition.
+service Conference {
+  // Sends a greeting
+  rpc Register (RegisterRequest) returns (RegisterReply) {}
+}
+
+message RegisterRequest {
+  string name = 1;
+}
+
+message RegisterReply {
+  string name = 1;
+  int32 registration_number = 2;
+}

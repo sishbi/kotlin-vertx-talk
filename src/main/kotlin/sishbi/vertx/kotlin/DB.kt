@@ -30,16 +30,17 @@ class DB(vertx: Vertx) {
             .build()
     }
 
-    suspend fun initDB() = withContext(Dispatchers.IO) {
-        kotlin.runCatching {
+    suspend fun initDB(): Boolean = withContext(Dispatchers.IO) {
+        try {
             Flyway
                 .configure()
                 .dataSource(configuration.dbUrl, configuration.dbUser, configuration.dbPassword)
                 .load()
                 .migrate()
-        }.onFailure {
-            LOG.error(it) { "Failed to migrate DB" }
-            throw it
+                .success
+        } catch (e: Exception) {
+            LOG.error(e) { "Failed to migrate DB" }
+            throw e
         }
     }
 

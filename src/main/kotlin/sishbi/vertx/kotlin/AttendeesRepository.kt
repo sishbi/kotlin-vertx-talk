@@ -3,16 +3,16 @@ package sishbi.vertx.kotlin
 import io.vertx.kotlin.coroutines.coAwait
 import io.vertx.sqlclient.Tuple
 
-object UserQuery {
-    suspend fun getUserOrNull(name: String): MyUser? {
+object AttendeesRepository {
+    suspend fun getRegistrationNumberOrNull(name: String): MyUser? {
         val conn = DB.pool.connection.coAwait()
         return try {
-            conn.prepare("select * from public.test_users where name = $1").coAwait()
+            conn.prepare("select * from public.conference_attendees where name = $1").coAwait()
                 .query().execute(Tuple.of(name)).coAwait()
                 .map {
                     MyUser(
                         name = it.getString("name"),
-                        age = it.getInteger("age")
+                        regNumber = it.getInteger("reg_number")
                     )
                 }.firstOrNull()
         } finally {
@@ -20,14 +20,14 @@ object UserQuery {
         }
     }
 
-    suspend fun findUsers(): List<MyUser> {
+    suspend fun findAttendees(): List<MyUser> {
         val conn = DB.pool.connection.coAwait()
         return try {
-            conn.query("select * from public.test_users").execute().coAwait()
+            conn.query("select * from public.conference_attendees").execute().coAwait()
                 .map {
                     MyUser(
                         name = it.getString("name"),
-                        age = it.getInteger("age")
+                        regNumber = it.getInteger("reg_number")
                     )
                 }
         } finally {
@@ -38,5 +38,5 @@ object UserQuery {
 
 data class MyUser(
     val name: String,
-    val age: Int
+    val regNumber: Int
 )

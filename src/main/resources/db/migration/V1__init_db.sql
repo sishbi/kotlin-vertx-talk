@@ -1,10 +1,14 @@
 create table public.conference_attendees
 (
-    id   uuid default gen_random_uuid() not null,
+    id uuid default gen_random_uuid() not null
+        constraint conference_attendees_pk primary key,
     name varchar                        not null,
-    reg_number integer                  not null
+    role varchar                        not null
 );
 
-insert into conference_attendees (name, reg_number) values ('User 1', 1);
-insert into conference_attendees (name, reg_number) values ('User 2', 2);
-insert into conference_attendees (name, reg_number) values ('User 3', 3);
+create unique index conference_attendees_name_uq
+    on public.conference_attendees (name);
+
+insert into conference_attendees (name, role) values ('User 1', 'Backend Developer');
+insert into conference_attendees (name, role) values ('User 2', 'Frontend Developer');
+insert into conference_attendees (name, role) values ('User 3', 'Lead Developer');

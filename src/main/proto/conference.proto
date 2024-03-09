@@ -5,17 +5,25 @@ option java_package = "sishbi.vertx.grpc";
 option java_outer_classname = "ConferenceProto";
 package sishbi.vertx.grpc;
 
-// The conference service definition.
-service Conference {
-  // Sends a registration check
-  rpc Register (RegisterRequest) returns (RegisterReply) {}
+service ConferenceCheck {
+  rpc Check (CheckRequest) returns (Attendee);
+}
+
+service ConferenceReg {
+  rpc Register(RegisterRequest) returns (Attendee);
+}
+
+message CheckRequest {
+  string name = 1;
 }
 
 message RegisterRequest {
   string name = 1;
+  string role = 2;
 }
 
-message RegisterReply {
-  string name = 1;
-  int32 registration_number = 2;
+message Attendee {
+  string id = 1;
+  string name = 2;
+  string role = 3;
 }

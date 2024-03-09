@@ -22,6 +22,7 @@ val javaVendor: JvmVendorSpec = JvmVendorSpec.ADOPTIUM
 
 val coroutinesVersion = "1.8.0"
 val grpcVersion = "1.62.2"
+val jacksonVersion = "2.16.1"
 val javaxAnnotationVersion = "1.3.1"
 val junitJupiterVersion = "5.10.2"
 val flywayVersion = "10.8.1"
@@ -65,6 +66,7 @@ dependencies {
     implementation("io.vertx:vertx-lang-kotlin-coroutines")
     implementation("io.vertx:vertx-lang-kotlin")
     implementation("io.vertx:vertx-grpc-client")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation(kotlin("stdlib-jdk8"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8")

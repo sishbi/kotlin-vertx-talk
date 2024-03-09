@@ -1,5 +1,6 @@
 package sishbi.vertx.kotlin
 
+import io.netty.handler.codec.http.HttpResponseStatus
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import io.vertx.kotlin.core.json.json
@@ -27,14 +28,23 @@ class HttpVerticle : CoroutineVerticle(), CoroutineRouterSupport {
         LOG.info { "HTTP server listening on port ${server.actualPort()}" }
     }
 
-    private suspend fun attendees(ctx: RoutingContext) {
+    private suspend fun attendees(ctx: RoutingContext) = try {
         LOG.info { "Received attendees HTTP request" }
+        val attendees = AttendeesRepository.findAttendees().map {
+            json {
+                obj(
+                    "id" to it.id,
+                    "name" to it.name,
+                    "role" to it.role
+                )
+            }
+        }
         ctx.response().putHeader("content-type", "application/json")
-        val users = AttendeesRepository.findAttendees().map { json { obj(
-            "name" to it.name,
-            "regNumber" to it.regNumber
-        ) } }
-        ctx.end(jsonArrayOf(users).encode())
-            .coAwait()
+        ctx.end(json {
+            obj("attendees" to attendees)
+        }.encode()).coAwait()
+    } catch (e: Exception) {
+        LOG.error(e) { "Exception while finding attendees" }
+        ctx.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end("Error: ${e.message}")
     }
 }

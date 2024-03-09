@@ -1,9 +1,12 @@
 package sishbi.vertx.kotlin
 
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.vertx.core.Vertx
+import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.core.net.SocketAddress
 import io.vertx.ext.web.client.WebClient
 import io.vertx.grpc.client.GrpcClient
+import io.vertx.grpc.common.GrpcStatus
 import io.vertx.junit5.VertxExtension
 import io.vertx.kotlin.coroutines.coAwait
 import kotlinx.coroutines.runBlocking
@@ -14,7 +17,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 import org.testcontainers.containers.PostgreSQLContainer
-import sishbi.vertx.grpc.VertxConferenceGrpcClient
+import sishbi.vertx.grpc.ConferenceCheckGrpc
+import sishbi.vertx.grpc.ConferenceRegGrpc
+import sishbi.vertx.grpc.VertxConferenceCheckGrpcClient
+import sishbi.vertx.grpc.VertxConferenceRegGrpcClient
+import sishbi.vertx.grpc.checkRequest
 import sishbi.vertx.grpc.registerRequest
 
 
@@ -24,9 +31,12 @@ private val LOG = KotlinLogging.logger {}
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TestMainVerticle {
     private val postgres = PostgreSQLContainer("postgres:15")
+    private val address = SocketAddress.inetSocketAddress(8889, "localhost")
+    private lateinit var grpcClient: GrpcClient
+    private lateinit var httpClient: WebClient
 
     @BeforeAll
-    fun deploy_verticle(vertx: Vertx) {
+    fun setup(vertx: Vertx) {
         postgres.start()
         configuration.dbHost = postgres.host
         configuration.dbPort = postgres.firstMappedPort
@@ -36,6 +46,8 @@ class TestMainVerticle {
 
         runBlocking {
             vertx.deployVerticle(MainVerticle()).coAwait()
+            grpcClient = GrpcClient.client(vertx)
+            httpClient = WebClient.create(vertx)
         }
     }
 
@@ -45,41 +57,88 @@ class TestMainVerticle {
     }
 
     @Test
-    fun `register grpc with unknown user`(vertx: Vertx) {
-        val client = GrpcClient.client(vertx)
-        val registration = VertxConferenceGrpcClient(client, SocketAddress.inetSocketAddress(8889, "localhost"))
-
+    fun `check grpc with known user`() {
+        val checkClient = VertxConferenceCheckGrpcClient(grpcClient, address)
         try {
             runBlocking {
-                val response = registration.register(registerRequest {
-                    name = "Unknown User"
+                val response = checkClient.check(checkRequest {
+                    name = "User 1"
                 }).coAwait()
-                LOG.info { "gRPC Response: ${response.name} = ${response.registrationNumber}" }
+                LOG.info { "gRPC Response: ${response.name} = ${response.role} (${response.id})" }
             }
         } catch (e: Throwable) {
-            LOG.info { "$e" }
+            LOG.info { "gRPC Error Response: ${e.message}" }
         }
     }
 
     @Test
-    fun `register grpc with known user`(vertx: Vertx) {
-        val client = GrpcClient.client(vertx)
-        val hello = VertxConferenceGrpcClient(client, SocketAddress.inetSocketAddress(8889, "localhost"))
+    fun `check grpc with unknown user`() {
+        try {
+            runBlocking {
+                val request = grpcClient.request(address, ConferenceCheckGrpc.getCheckMethod()).coAwait()
 
-        runBlocking {
-            val response = hello.register(registerRequest {
-                name = "User 1"
-            }).coAwait()
-            LOG.info { "gRPC Response: ${response.name} = ${response.registrationNumber}" }
+                val res = request.send(checkRequest {
+                        name = "Unknown User"
+                    }).coAwait()
+                if (res.status() == GrpcStatus.OK) {
+                    val response = res.last().coAwait()
+                    LOG.info { "gRPC Response: ${response?.name} = ${response?.role} (${response?.id})" }
+                } else {
+                    LOG.info { "Failed to find user: ${res.status().name} = ${res.statusMessage()}" }
+                }
+            }
+        } catch (e: Throwable) {
+            LOG.info { "gRPC Error Response: ${e.message}" }
         }
     }
 
     @Test
-    fun `attendees http`(vertx: Vertx) {
-        val client = WebClient.create(vertx)
+    fun `register grpc with new user`() {
+        val registerClient = VertxConferenceRegGrpcClient(grpcClient, address)
+        try {
+            runBlocking {
+                val response = registerClient.register(registerRequest {
+                    name = "User 4"
+                    role = "Manager"
+                }).coAwait()
+                LOG.info { "gRPC Response: ${response.name} = ${response.role} (${response.id})" }
+            }
+        } catch (e: Throwable) {
+            LOG.info { "gRPC Error Response: ${e.message}" }
+        }
+    }
+
+    @Test
+    fun `register grpc with duplicate user`() {
+        try {
+            runBlocking {
+                val request = grpcClient.request(address, ConferenceRegGrpc.getRegisterMethod()).coAwait()
+                val res = request.send(registerRequest {
+                    name = "User 1"
+                    role = "Manager"
+                }).coAwait()
+                if (res.status() == GrpcStatus.OK) {
+                    val response = res.last().coAwait()
+                    LOG.info { "gRPC Response: ${response.name} = ${response.role} (${response.id})" }
+                } else {
+                    LOG.info { "Failed to register user: ${res.status().name} = ${res.statusMessage()}" }
+                }
+            }
+        } catch (e: Throwable) {
+            LOG.info { "gRPC Error Response: ${e.message}" }
+        }
+    }
+
+    @Test
+    fun `attendees http`() {
+        DatabindCodec.mapper().registerKotlinModule()
         runBlocking {
-            val response = client.getAbs("http://localhost:8888/attendees").send().coAwait()
+            val response = httpClient.getAbs("http://localhost:8888/attendees").send().coAwait()
             LOG.info { "Http Response ${response.statusCode()}: ${response.bodyAsString()}" }
+            val attendees = response.bodyAsJsonObject().mapTo(Attendees::class.java).attendees
+            LOG.info { "Have ${attendees.size} attendees: \n${attendees.joinToString(separator = "\n") { "$it" }}" }
         }
     }
 }
+
+data class Attendees(val attendees: List<Attendee>)

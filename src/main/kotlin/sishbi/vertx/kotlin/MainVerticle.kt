@@ -19,8 +19,8 @@ class MainVerticle : CoroutineVerticle() {
 fun main() {
     LOG.info { "Started" }
     Vertx.vertx().deployVerticle(MainVerticle())
-        .onFailure {
-            LOG.error(it) { "Failed" }
+        .onFailure { e ->
+            LOG.error(e) { "Failed" }
             exitProcess(-1)
         }
 }

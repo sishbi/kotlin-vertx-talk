@@ -34,7 +34,7 @@ val protoBufVersion = "3.25.3"
 val scramVersion = "2.1"
 val slf4jVersion = "2.0.12"
 val testContainersVersion = "1.19.6"
-val vertxVersion = "4.5.4"
+val vertxVersion = "4.5.6"
 
 val mainVerticleName = "sishbi.vertx.kotlin.MainVerticleKt"
 
@@ -63,6 +63,7 @@ dependencies {
     implementation("io.vertx:vertx-web")
     implementation("io.vertx:vertx-grpc-server")
     implementation("io.vertx:vertx-pg-client")
+    implementation("io.vertx:vertx-sql-client-templates")
     implementation("io.vertx:vertx-lang-kotlin-coroutines")
     implementation("io.vertx:vertx-lang-kotlin")
     implementation("io.vertx:vertx-grpc-client")

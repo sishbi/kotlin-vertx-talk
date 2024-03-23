@@ -11,4 +11,4 @@ data class Config(
     val dbUrl: String get() = "jdbc:postgresql://${dbHost}:${dbPort}/${dbDB}"
 }
 
-val configuration = Config()
+val config = Config()

@@ -37,12 +37,13 @@ class TestMainVerticle {
 
     @BeforeAll
     fun setup(vertx: Vertx) {
+        DatabindCodec.mapper().registerKotlinModule()
         postgres.start()
-        configuration.dbHost = postgres.host
-        configuration.dbPort = postgres.firstMappedPort
-        configuration.dbDB = postgres.databaseName
-        configuration.dbUser = postgres.username
-        configuration.dbPassword = postgres.password
+        config.dbHost = postgres.host
+        config.dbPort = postgres.firstMappedPort
+        config.dbDB = postgres.databaseName
+        config.dbUser = postgres.username
+        config.dbPassword = postgres.password
 
         runBlocking {
             vertx.deployVerticle(MainVerticle()).coAwait()
@@ -58,13 +59,17 @@ class TestMainVerticle {
 
     @Test
     fun `check grpc with known user`() {
-        val checkClient = VertxConferenceCheckGrpcClient(grpcClient, address)
         try {
             runBlocking {
-                val response = checkClient.check(checkRequest {
-                    name = "User 1"
-                }).coAwait()
-                LOG.info { "gRPC Response: ${response.name} = ${response.role} (${response.id})" }
+                val checkClient =
+                    VertxConferenceCheckGrpcClient(grpcClient, address)
+                checkClient.check(
+                    checkRequest {
+                        name = "User 1"
+                    }
+                ).coAwait().also {
+                    LOG.info { "${it.name} = ${it.role} (${it.id})" }
+                }
             }
         } catch (e: Throwable) {
             LOG.info { "gRPC Error Response: ${e.message}" }
@@ -118,10 +123,11 @@ class TestMainVerticle {
                     role = "Manager"
                 }).coAwait()
                 if (res.status() == GrpcStatus.OK) {
-                    val response = res.last().coAwait()
-                    LOG.info { "gRPC Response: ${response.name} = ${response.role} (${response.id})" }
+                    res.last().coAwait().also {
+                        LOG.info { "gRPC Response: ${it.name} = ${it.role} (${it.id})" }
+                    }
                 } else {
-                    LOG.info { "Failed to register user: ${res.status().name} = ${res.statusMessage()}" }
+                    LOG.info { "Failed: ${res.status().name} = ${res.statusMessage()}" }
                 }
             }
         } catch (e: Throwable) {
@@ -131,14 +137,20 @@ class TestMainVerticle {
 
     @Test
     fun `attendees http`() {
-        DatabindCodec.mapper().registerKotlinModule()
         runBlocking {
-            val response = httpClient.getAbs("http://localhost:8888/attendees").send().coAwait()
-            LOG.info { "Http Response ${response.statusCode()}: ${response.bodyAsString()}" }
-            val attendees = response.bodyAsJsonObject().mapTo(Attendees::class.java).attendees
-            LOG.info { "Have ${attendees.size} attendees: \n${attendees.joinToString(separator = "\n") { "$it" }}" }
+            data class Attendees(
+                val attendees: List<AttendeesRepository.Attendee>
+            )
+            val response = httpClient.getAbs(
+                "http://localhost:8888/attendees"
+            ).send().coAwait()
+
+            response.bodyAsJsonObject()
+                .mapTo(Attendees::class.java).attendees
+                .map {
+                    "${it.id} = ${it.name}, ${it.role}"
+                }
         }
     }
 }
 
-data class Attendees(val attendees: List<Attendee>)

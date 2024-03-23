@@ -13,28 +13,26 @@ import org.flywaydb.core.Flyway
 private val LOG = KotlinLogging.logger {}
 
 class DB(vertx: Vertx) {
+    companion object {
+        lateinit var pool: Pool
+    }
+
     init {
-        pool = PgBuilder
-            .pool()
+        pool = PgBuilder.pool()
             .with(poolOptionsOf(maxSize = 5))
-            .connectingTo(
-                pgConnectOptionsOf(
-                    host = configuration.dbHost,
-                    port = configuration.dbPort,
-                    database = configuration.dbDB,
-                    user = configuration.dbUser,
-                    password = configuration.dbPassword
-                )
-            )
-            .using(vertx)
-            .build()
+            .connectingTo(pgConnectOptionsOf(
+                host = config.dbHost, port = config.dbPort,
+                database = config.dbDB,
+                user = config.dbUser, password = config.dbPassword
+            ))
+            .using(vertx).build()
     }
 
     suspend fun initDB(): Boolean = withContext(Dispatchers.IO) {
         try {
             Flyway
                 .configure()
-                .dataSource(configuration.dbUrl, configuration.dbUser, configuration.dbPassword)
+                .dataSource(config.dbUrl, config.dbUser, config.dbPassword)
                 .load()
                 .migrate()
                 .success
@@ -44,8 +42,4 @@ class DB(vertx: Vertx) {
         }
     }
 
-    companion object {
-        lateinit var pool: Pool
-
-    }
 }

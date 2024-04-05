@@ -11,7 +11,7 @@ private val LOG = mu.KotlinLogging.logger {}
 class MainVerticle : CoroutineVerticle() {
     override suspend fun start() {
         DB(vertx).initDB()
-        vertx.deployVerticle(HttpVerticle()).coAwait()
+        vertx.deployVerticle(WebVerticle()).coAwait()
         vertx.deployVerticle(GrpcVerticle()).coAwait()
     }
 }

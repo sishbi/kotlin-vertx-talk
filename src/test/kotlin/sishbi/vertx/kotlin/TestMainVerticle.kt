@@ -33,7 +33,7 @@ class TestMainVerticle {
     private val postgres = PostgreSQLContainer("postgres:15")
     private val address = SocketAddress.inetSocketAddress(8889, "localhost")
     private lateinit var grpcClient: GrpcClient
-    private lateinit var httpClient: WebClient
+    private lateinit var webClient: WebClient
 
     @BeforeAll
     fun setup(vertx: Vertx) {
@@ -48,7 +48,7 @@ class TestMainVerticle {
         runBlocking {
             vertx.deployVerticle(MainVerticle()).coAwait()
             grpcClient = GrpcClient.client(vertx)
-            httpClient = WebClient.create(vertx)
+            webClient = WebClient.create(vertx)
         }
     }
 
@@ -141,7 +141,7 @@ class TestMainVerticle {
             data class Attendees(
                 val attendees: List<AttendeesRepository.Attendee>
             )
-            val response = httpClient.getAbs(
+            val response = webClient.getAbs(
                 "http://localhost:8888/attendees"
             ).send().coAwait()
 

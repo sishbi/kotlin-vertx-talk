@@ -13,7 +13,6 @@ import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import sishbi.vertx.grpc.Attendee
 import sishbi.vertx.grpc.CheckRequest
-import sishbi.vertx.grpc.ConferenceCheckGrpc
 import sishbi.vertx.grpc.ConferenceCheckGrpc.getCheckMethod
 import sishbi.vertx.grpc.RegisterRequest
 import sishbi.vertx.grpc.VertxConferenceRegGrpcServer
@@ -53,7 +52,7 @@ class ConferenceRegGrpcController
             role = attendee.role
         }
     } catch (e: NoStackTraceThrowable) {
-        throw IllegalStateException("Failed, ${e.message}")
+        throw IllegalStateException("Failed, ${e.message}", e)
     }
 }
 

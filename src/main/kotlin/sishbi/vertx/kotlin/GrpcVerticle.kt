@@ -9,11 +9,13 @@ import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.coAwait
 import io.vertx.kotlin.coroutines.dispatcher
 import io.vertx.kotlin.coroutines.vertxFuture
+import io.vertx.pgclient.PgException
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import sishbi.vertx.grpc.Attendee
 import sishbi.vertx.grpc.CheckRequest
 import sishbi.vertx.grpc.ConferenceCheckGrpc.getCheckMethod
+import sishbi.vertx.grpc.ConferenceCheckGrpcKt.checkMethod
 import sishbi.vertx.grpc.RegisterRequest
 import sishbi.vertx.grpc.VertxConferenceRegGrpcServer
 import sishbi.vertx.grpc.attendee
@@ -51,8 +53,9 @@ class ConferenceRegGrpcController
             name = attendee.name
             role = attendee.role
         }
-    } catch (e: NoStackTraceThrowable) {
-        throw IllegalStateException("Failed, ${e.message}", e)
+    } catch (e: PgException) {
+        LOG.error(e) { "DB Failed, ${e.message}" }
+        throw IllegalStateException("Failed for: ${request.name}", e)
     }
 }
 
@@ -60,7 +63,7 @@ class ConferenceCheckGrpcController(
     private val grpcServer: GrpcServer
 ): CoroutineVerticle() {
     override suspend fun start() {
-        grpcServer.callHandler(getCheckMethod()) {
+        grpcServer.callHandler(checkMethod) {
             it.handler { request ->
                 launch(vertx.dispatcher()) {
                     check(request, it.response())
@@ -75,8 +78,7 @@ class ConferenceCheckGrpcController(
         }
     }
 
-    private suspend fun check(
-        request: CheckRequest,
+    private suspend fun check(request: CheckRequest,
         response: GrpcServerResponse<CheckRequest, Attendee>
     ) = AttendeesRepository.getAttendeeOrNull(request.name)?.let {
         response.end(attendee {

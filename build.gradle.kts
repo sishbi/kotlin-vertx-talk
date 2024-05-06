@@ -1,12 +1,16 @@
+import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import com.google.protobuf.gradle.id
 import org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED
+import org.jetbrains.kotlin.util.capitalizeDecapitalize.toUpperCaseAsciiOnly
 
 plugins {
-    kotlin("jvm") version "1.9.22"
+    kotlin("jvm") version "1.9.23"
     application
     id("com.google.protobuf") version "0.9.4"
+    id("se.patrikerdes.use-latest-versions") version "0.2.18"
+    id("com.github.ben-manes.versions") version "0.51.0"
 }
 
 group = "sishbi.vertx"
@@ -21,20 +25,20 @@ val javaVersion = 21
 val javaVendor: JvmVendorSpec = JvmVendorSpec.ADOPTIUM
 
 val coroutinesVersion = "1.8.0"
-val grpcVersion = "1.62.2"
-val jacksonVersion = "2.16.1"
-val javaxAnnotationVersion = "1.3.1"
+val grpcVersion = "1.63.0"
+val jacksonVersion = "2.17.1"
+val javaxAnnotationVersion = "1.3.2"
 val junitJupiterVersion = "5.10.2"
-val flywayVersion = "10.8.1"
+val flywayVersion = "10.12.0"
 val kotlinLoggingVersion = "3.0.5"
 val kotlinProtoVersion = "1.4.1"
-val log4jVersion = "2.22.1"
-val postgreVersion = "42.7.2"
-val protoBufVersion = "3.25.3"
+val log4jVersion = "2.23.1"
+val postgreVersion = "42.7.3"
+val protoBufVersion = "4.26.1"
 val scramVersion = "2.1"
-val slf4jVersion = "2.0.12"
-val testContainersVersion = "1.19.6"
-val vertxVersion = "4.5.6"
+val slf4jVersion = "2.0.13"
+val testContainersVersion = "1.19.7"
+val vertxVersion = "4.5.7"
 
 val mainVerticleName = "sishbi.vertx.kotlin.MainVerticleKt"
 
@@ -130,3 +134,12 @@ protobuf {
         }
     }
 }
+fun isNonStable(version: String): Boolean {
+    val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.toUpperCaseAsciiOnly().contains(it) }
+    val regex = "^[0-9,.v-]+$".toRegex()
+    val isStable = stableKeyword || regex.matches(version)
+    return isStable.not()
+}
+tasks.named<DependencyUpdatesTask>("dependencyUpdates").configure { checkForGradleUpdate = false }
+tasks.withType<DependencyUpdatesTask> { rejectVersionIf { isNonStable(candidate.version) } }
+task("doAll") { dependsOn("useLatestVersions", "clean", "test") }

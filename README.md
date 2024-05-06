@@ -2,7 +2,7 @@
 
 Example project for a Vertx in Kotlin talk
 
-[![vert.x](https://img.shields.io/badge/vert.x-4.5.4-purple.svg)](https://vertx.io)
+[![vert.x](https://img.shields.io/badge/vert.x-4.5.7-purple.svg)](https://vertx.io)
 
 This application was generated using http://start.vertx.io
 

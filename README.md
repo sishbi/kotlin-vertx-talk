@@ -6,30 +6,22 @@ Example project for a Vertx in Kotlin talk
 
 This application was generated using http://start.vertx.io
 
-## Building
+## Slides
+Check out the slides and video for the talk associated with this repo.  
+_Coming soon..._
 
-To launch your tests:
+## Database
+This project uses test containers with a postgres 15 container running in a local Docker container runtime.
+Make sure you have a local Docker runtime before starting the tests.  
+It will download the postgres 15 container automatically when the tests are started for the first time.
+
+## Building
+To build the application and launch the tests:
 
 ```
 ./gradlew clean test
 ```
 
-To package your application:
-
-```
-./gradlew clean assemble
-```
-
-To run your application:
-
-```
-./gradlew clean run
-```
-
 ## Vertx Help
 
 * [Vert.x Documentation](https://vertx.io/docs/)
-* [Vert.x Stack Overflow](https://stackoverflow.com/questions/tagged/vert.x?sort=newest&pageSize=15)
-* [Vert.x User Group](https://groups.google.com/forum/?fromgroups#!forum/vertx)
-* [Vert.x Discord](https://discord.gg/6ry7aqPWXy)
-* [Vert.x Gitter](https://gitter.im/eclipse-vertx/vertx-users)

@@ -13,6 +13,8 @@ import io.vertx.kotlin.coroutines.coAwait
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -142,8 +144,9 @@ class TestMainVerticle {
         response.bodyAsJsonObject()
             .mapTo(Attendees::class.java).attendees
             .map {
-                "${it.id} = ${it.name}, ${it.role}"
-            }
+                LOG.info { "${it.id} = ${it.name}, ${it.role}" }
+                it
+            }.also { assertNotEquals(0, it.size) }
     }
 }
 

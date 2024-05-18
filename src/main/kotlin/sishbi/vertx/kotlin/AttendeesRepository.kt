@@ -3,11 +3,8 @@ package sishbi.vertx.kotlin
 import io.vertx.kotlin.coroutines.coAwait
 import io.vertx.kotlin.coroutines.vertxFuture
 import io.vertx.sqlclient.Row
-import io.vertx.sqlclient.SqlConnection
-import io.vertx.sqlclient.Transaction
 import io.vertx.sqlclient.Tuple
 import io.vertx.sqlclient.templates.SqlTemplate
-import org.checkerframework.checker.units.qual.t
 import java.util.UUID
 
 object AttendeesRepository {

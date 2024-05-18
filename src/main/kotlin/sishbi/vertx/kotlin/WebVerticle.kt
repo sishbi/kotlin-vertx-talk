@@ -1,6 +1,7 @@
 package sishbi.vertx.kotlin
 
 import io.netty.handler.codec.http.HttpResponseStatus
+import io.vertx.core.impl.NoStackTraceThrowable
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import io.vertx.kotlin.core.json.array
@@ -9,6 +10,7 @@ import io.vertx.kotlin.core.json.obj
 import io.vertx.kotlin.coroutines.CoroutineRouterSupport
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.coAwait
+import io.vertx.pgclient.PgException
 import mu.KotlinLogging
 
 private val LOG = KotlinLogging.logger {}
@@ -21,7 +23,11 @@ class WebVerticle : CoroutineVerticle(), CoroutineRouterSupport {
         }
         router.coErrorHandler(500) { ctx ->
             LOG.error(ctx.failure()) { "Uncaught exception" }
-            ctx.end("${ctx.failure().message}").coAwait()
+            if (!ctx.response().ended()) {
+                ctx.end("${ctx.failure().message}").coAwait()
+            } else {
+                LOG.error { "Response has already been written" }
+            }
         }
 
         vertx.createHttpServer()
@@ -41,10 +47,10 @@ class WebVerticle : CoroutineVerticle(), CoroutineRouterSupport {
                 }
             ))
         }
-
         ctx.response().putHeader("content-type", "application/json")
         ctx.end(jsonBody.encode()).coAwait()
-    } catch (e: Exception) {
+    } catch (e: NoStackTraceThrowable) {
+        LOG.error(e) { "Error finding attendees" }
         ctx.response()
             .setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code())
             .end("Error: ${e.message}")

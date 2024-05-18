@@ -21,9 +21,11 @@ class DB(vertx: Vertx) {
         pool = PgBuilder.pool()
             .with(poolOptionsOf(maxSize = 5))
             .connectingTo(pgConnectOptionsOf(
-                host = config.dbHost, port = config.dbPort,
+                host = config.dbHost,
+                port = config.dbPort,
                 database = config.dbDB,
-                user = config.dbUser, password = config.dbPassword
+                user = config.dbUser,
+                password = config.dbPassword
             ))
             .using(vertx).build()
     }

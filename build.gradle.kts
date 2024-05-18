@@ -6,7 +6,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED
 import org.jetbrains.kotlin.util.capitalizeDecapitalize.toUpperCaseAsciiOnly
 
 plugins {
-    kotlin("jvm") version "1.9.23"
+    kotlin("jvm") version "1.9.24"
     application
     id("com.google.protobuf") version "0.9.4"
     id("se.patrikerdes.use-latest-versions") version "0.2.18"
@@ -24,12 +24,12 @@ repositories {
 val javaVersion = 21
 val javaVendor: JvmVendorSpec = JvmVendorSpec.ADOPTIUM
 
-val coroutinesVersion = "1.8.0"
-val grpcVersion = "1.63.0"
+val coroutinesVersion = "1.8.1"
+val grpcVersion = "1.64.0"
 val jacksonVersion = "2.17.1"
 val javaxAnnotationVersion = "1.3.2"
 val junitJupiterVersion = "5.10.2"
-val flywayVersion = "10.12.0"
+val flywayVersion = "10.13.0"
 val kotlinLoggingVersion = "3.0.5"
 val kotlinProtoVersion = "1.4.1"
 val log4jVersion = "2.23.1"
@@ -37,7 +37,7 @@ val postgreVersion = "42.7.3"
 val protoBufVersion = "4.26.1"
 val scramVersion = "2.1"
 val slf4jVersion = "2.0.13"
-val testContainersVersion = "1.19.7"
+val testContainersVersion = "1.19.8"
 val vertxVersion = "4.5.7"
 
 val mainVerticleName = "sishbi.vertx.kotlin.MainVerticleKt"

@@ -37,23 +37,26 @@ class WebVerticle : CoroutineVerticle(), CoroutineRouterSupport {
     }
 
     private suspend fun attendees(ctx: RoutingContext) = try {
-        val jsonBody = json {
-            obj("attendees" to array(
-                AttendeesRepository.findAttendees().map {
-                    obj("id" to it.id,
-                        "name" to it.name,
-                        "role" to it.role
-                    )
-                }
-            ))
-        }
+        val jsonBody = getAttendeesJson()
         ctx.response().putHeader("content-type", "application/json")
-        ctx.end(jsonBody.encode()).coAwait()
+        ctx.response().end(jsonBody.encode()).coAwait()
     } catch (e: NoStackTraceThrowable) {
         LOG.error(e) { "Error finding attendees" }
         ctx.response()
             .setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code())
             .end("Error: ${e.message}")
             .coAwait()
+    }
+
+    private suspend fun getAttendeesJson() = json {
+        obj("attendees" to array(
+            AttendeesRepository.findAttendees().map {
+                obj(
+                    "id" to it.id,
+                    "name" to it.name,
+                    "role" to it.role
+                )
+            }
+        ))
     }
 }

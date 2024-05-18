@@ -14,7 +14,7 @@ object AttendeesRepository {
                 SqlTemplate.forQuery(conn,
                     """
                     select * from public.conference_attendees
-                    where name = #{name}
+                    where name = #{name} limit 1
                     """
                 ).execute(mapOf("name" to name)).coAwait()
                     .firstOrNull()?.toAttendee()

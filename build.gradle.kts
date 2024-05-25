@@ -6,7 +6,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED
 import org.jetbrains.kotlin.util.capitalizeDecapitalize.toUpperCaseAsciiOnly
 
 plugins {
-    kotlin("jvm") version "1.9.24"
+    kotlin("jvm") version "2.0.0"
     application
     id("com.google.protobuf") version "0.9.4"
     id("se.patrikerdes.use-latest-versions") version "0.2.18"
@@ -27,18 +27,17 @@ val javaVendor: JvmVendorSpec = JvmVendorSpec.ADOPTIUM
 val coroutinesVersion = "1.8.1"
 val grpcVersion = "1.64.0"
 val jacksonVersion = "2.17.1"
-val javaxAnnotationVersion = "1.3.2"
 val junitJupiterVersion = "5.10.2"
 val flywayVersion = "10.13.0"
 val kotlinLoggingVersion = "3.0.5"
 val kotlinProtoVersion = "1.4.1"
 val log4jVersion = "2.23.1"
 val postgreVersion = "42.7.3"
-val protoBufVersion = "4.26.1"
+val protoBufVersion = "4.27.0"
 val scramVersion = "2.1"
 val slf4jVersion = "2.0.13"
 val testContainersVersion = "1.19.8"
-val vertxVersion = "4.5.7"
+val vertxVersion = "4.5.8"
 
 val mainVerticleName = "sishbi.vertx.kotlin.MainVerticleKt"
 
@@ -76,7 +75,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-slf4j")
-    implementation("com.ongres.scram:client:$scramVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation("org.apache.logging.log4j:log4j-slf4j2-impl")
     implementation("org.apache.logging.log4j:log4j-core")
@@ -86,8 +84,8 @@ dependencies {
     implementation("io.grpc:grpc-stub:$grpcVersion")
     implementation("io.grpc:grpc-protobuf:$grpcVersion")
     implementation("io.grpc:grpc-kotlin-stub:$kotlinProtoVersion")
-    implementation("javax.annotation:javax.annotation-api:$javaxAnnotationVersion")
     implementation("org.postgresql:postgresql:$postgreVersion")
+    implementation("com.ongres.scram:client:$scramVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
 
